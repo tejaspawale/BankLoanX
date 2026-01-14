@@ -23,6 +23,12 @@ function Login() {
 
     const text = await response.text();
     setMessage(text);
+
+
+    const data = await response.json();
+    localStorage.setItem("token", data.token);
+    setMessage("Login successful");
+    
   } catch (error) {
     console.error(error);
     setMessage("Cannot connect to backend");

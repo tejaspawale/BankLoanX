@@ -7,8 +7,6 @@ function Login() {
   const [message, setMessage] = useState("");
 
   const handleLogin = async () => {
-  console.log("Login button clicked");
-
   try {
     const response = await fetch("http://localhost:5029/api/auth/login", {
       method: "POST",
@@ -21,14 +19,16 @@ function Login() {
       })
     });
 
-    const text = await response.text();
-    setMessage(text);
+    if (!response.ok) {
+      const errorText = await response.text();
+      setMessage(errorText);
+      return;
+    }
 
-
-    const data = await response.json();
+    const data = await response.json();   // ✅ READ ONLY ONCE
     localStorage.setItem("token", data.token);
     setMessage("Login successful");
-    
+
   } catch (error) {
     console.error(error);
     setMessage("Cannot connect to backend");

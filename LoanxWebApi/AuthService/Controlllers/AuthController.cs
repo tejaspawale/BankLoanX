@@ -38,11 +38,11 @@ public IActionResult Login(User user)
 
     var claims = new[]
     {
-        new Claim(ClaimTypes.Name, existingUser.Username)
+        new Claim(ClaimTypes.Name, existingUser.Username ?? string.Empty)
     };
 
     var key = new SymmetricSecurityKey(
-        Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+        Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key is not configured")));
 
     var token = new JwtSecurityToken(
         issuer: _configuration["Jwt:Issuer"],

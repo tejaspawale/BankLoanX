@@ -3,6 +3,7 @@ import Login from './Pages/Login.jsx'
 import './App.css'
 import Account from './Account.jsx' 
 import Register from './Register.jsx'
+import Loan from './Loan.jsx' 
 
 function App() {
 
@@ -17,6 +18,7 @@ function App() {
       <hr />
 
       <Account />
+      <Loan />
     </div>
   )
 }

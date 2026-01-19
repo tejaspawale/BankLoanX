@@ -1,15 +1,22 @@
 import React from 'react' 
 import Login from './Pages/Login.jsx' 
 import './App.css'
-import SecurePage from './Pages/SecurePage.jsx'
+import Account from './Account.jsx' 
+import Register from './Register.jsx'
 
 function App() {
 
   return (
     <div>
+      <h1>Welcome to LoanX</h1>
+
+      <Register />
+      <hr />
+
       <Login />
-      <hr/>
-      <SecurePage />
+      <hr />
+
+      <Account />
     </div>
   )
 }

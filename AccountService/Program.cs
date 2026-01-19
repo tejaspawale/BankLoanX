@@ -37,9 +37,6 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoidGVqYXMiLCJleHAiOjE3NjgzOTk0MzYsImlzcyI6IkF1dGhTZXJ2aWNlIiwiYXVkIjoiTG9hblhVc2VycyJ9.bjI5ie6uSddYekzkJGiksTKE4xgcS7XrKvObfoD03n0
-
-
 // CORS (allow React)
 builder.Services.AddCors(options =>
 {
@@ -47,8 +44,7 @@ builder.Services.AddCors(options =>
         policy =>
         {
             policy.WithOrigins("http://localhost:5173")
-                  .AllowAnyHeader()
-                  .AllowAnyMethod();
+                .AllowAnyHeader().AllowAnyMethod();
         });
 });
 
@@ -69,12 +65,26 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+
+    builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        policy =>
+        {
+            policy
+                .AllowAnyOrigin()
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+});
+
+
 var app = builder.Build();
 
 app.UseSwagger();
 app.UseSwaggerUI();
 
-app.UseCors("AllowReact");
+app.UseCors("AllowAll");
 
 app.UseAuthentication();
 app.UseAuthorization();

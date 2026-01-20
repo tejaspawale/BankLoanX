@@ -39,5 +39,22 @@ namespace AccountService.Controllers
 
             return Ok(accounts);
         }
+
+
+        [Authorize]
+        [HttpPost("credit")]
+        public IActionResult CreditAccount([FromBody] CreditRequest request)
+        {
+                // var account = accounts.FirstOrDefault(a => a.Id == request.AccountId);
+                var account = FakeAccountStore.Accounts.FirstOrDefault(a => a.Id == request.AccountId);
+
+            if (account == null)
+                return NotFound("Account not found");
+
+            account.Balance += request.Amount;
+
+            return Ok(account);
+        }
+
     }
 }

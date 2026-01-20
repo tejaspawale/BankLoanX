@@ -65,4 +65,39 @@ public class LoanController : ControllerBase
 
         return Ok(loan);
     }
+
+[HttpPost("disburse/{id}")]
+public async Task<IActionResult> DisburseLoan(int id)
+{
+    var loan = loans.FirstOrDefault(l => l.Id == id);
+
+    if (loan == null)
+        return NotFound("Loan not found");
+
+    if (loan.Status != LoanStatus.Approved)
+        return BadRequest("Loan not approved");
+
+    var client = new HttpClient();
+
+    var token = Request.Headers["Authorization"].ToString();
+
+    client.DefaultRequestHeaders.Add("Authorization", token);
+
+    var response = await client.PostAsJsonAsync(
+        "http://localhost:5028/api/accounts/credit",
+        new
+        {
+            AccountId = 1,        // temporary (we’ll improve this)
+            Amount = loan.Amount
+        });
+
+    if (!response.IsSuccessStatusCode)
+        return BadRequest("Account credit failed");
+
+    loan.Status = LoanStatus.Disbursed;
+
+    return Ok(loan);
+}
+
+
 }

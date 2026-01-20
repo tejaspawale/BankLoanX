@@ -35,7 +35,9 @@ public class LoanController : ControllerBase
                 request.TenureMonths
             ),
             Username = username,
-            Status = LoanStatus.Pending
+            Status = LoanStatus.Pending,
+            OutstandingAmount = request.Amount
+
         };
 
         loans.Add(loan);
@@ -66,38 +68,82 @@ public class LoanController : ControllerBase
         return Ok(loan);
     }
 
-[HttpPost("disburse/{id}")]
-public async Task<IActionResult> DisburseLoan(int id)
-{
-    var loan = loans.FirstOrDefault(l => l.Id == id);
-
-    if (loan == null)
-        return NotFound("Loan not found");
-
-    if (loan.Status != LoanStatus.Approved)
-        return BadRequest("Loan not approved");
-
-    var client = new HttpClient();
-
-    var token = Request.Headers["Authorization"].ToString();
-
-    client.DefaultRequestHeaders.Add("Authorization", token);
-
-    var response = await client.PostAsJsonAsync(
-        "http://localhost:5028/api/accounts/credit",
-        new
+        [HttpPost("disburse/{id}")]
+        public async Task<IActionResult> DisburseLoan(int id)
         {
-            AccountId = 1,        // temporary (we’ll improve this)
-            Amount = loan.Amount
-        });
+            var loan = loans.FirstOrDefault(l => l.Id == id);
 
-    if (!response.IsSuccessStatusCode)
-        return BadRequest("Account credit failed");
+            if (loan == null)
+                return NotFound("Loan not found");
 
-    loan.Status = LoanStatus.Disbursed;
+            if (loan.Status != LoanStatus.Approved)
+                return BadRequest("Loan not approved");
 
-    return Ok(loan);
-}
+            var client = new HttpClient();
+
+            var token = Request.Headers["Authorization"].ToString();
+
+            client.DefaultRequestHeaders.Add("Authorization", token);
+
+            var response = await client.PostAsJsonAsync(
+                "http://localhost:5028/api/accounts/credit",
+                new
+                {
+                    AccountId = 1,        // temporary (we’ll improve this)
+                    Amount = loan.Amount
+                });
+
+            if (!response.IsSuccessStatusCode)
+                return BadRequest("Account credit failed");
+
+            loan.Status = LoanStatus.Disbursed;
+            loan.OutstandingAmount = loan.Amount;
+            loan.RemainingEmis = loan.TenureMonths;
+
+
+            return Ok(loan);
+        }
+
+
+        //EMI PAYMENT API
+        [HttpPost("pay-emi/{id}")]
+        public async Task<IActionResult> PayEmi(int id)
+        {
+            var loan = loans.FirstOrDefault(l => l.Id == id);
+
+            if (loan == null)
+                return NotFound();
+
+            if (loan.Status != LoanStatus.Disbursed)
+                return BadRequest("Loan not disbursed");
+
+            if (loan.OutstandingAmount <= 0)
+                return BadRequest("Loan already closed");
+
+            var client = new HttpClient();
+            var token = Request.Headers["Authorization"].ToString();
+            client.DefaultRequestHeaders.Add("Authorization", token);
+
+            var response = await client.PostAsJsonAsync(
+                "http://localhost:5028/api/accounts/debit",
+                new
+                {
+                    AccountId = 1,
+                    Amount = loan.Emi
+                });
+
+            if (!response.IsSuccessStatusCode)
+                return BadRequest("Debit failed");
+
+            loan.OutstandingAmount -= loan.Emi;
+            loan.RemainingEmis--;
+
+            if (loan.OutstandingAmount <= 0)
+                loan.Status = LoanStatus.Closed;
+
+            return Ok(loan);
+        }
+
 
 
 }

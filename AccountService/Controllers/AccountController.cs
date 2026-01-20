@@ -56,5 +56,21 @@ namespace AccountService.Controllers
             return Ok(account);
         }
 
+        //debit API 
+            [Authorize]
+            [HttpPost("debit")]
+            public IActionResult Debit([FromBody] CreditRequest request)
+            {
+                var account = FakeAccountStore.Accounts.FirstOrDefault(a => a.Id == request.AccountId);
+                if (account == null)
+                    return NotFound("Account not found");
+
+                if (account.Balance < request.Amount)
+                    return BadRequest("Insufficient balance");
+
+                account.Balance -= request.Amount;
+                return Ok(account);
+            }
+
     }
 }

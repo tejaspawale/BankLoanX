@@ -8,5 +8,6 @@ public class Loan
     public int TenureMonths { get; set; }
     public decimal InterestRate { get; set; }
     public decimal Emi { get; set; }
-    public string Status { get; set; } = "Applied";
+
+    public LoanStatus Status {get; set;} 
 }

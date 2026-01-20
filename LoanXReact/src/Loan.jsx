@@ -73,7 +73,9 @@ function Loan() {
         }
 
         const data = await response.json();
-        setMessage("Loan applied. EMI: ₹" + data.emi);
+        setMessage("Loan applied successfully. Status: " + data.status + 
+        " | EMI: ₹" + data.emi);
+
         loadMyLoans();
 
       } catch (error) {
